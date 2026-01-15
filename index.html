@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Cyber VIP - Full</title>
+    <style>
+        body {
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: white;
+            overflow: hidden;
+            background-image: radial-gradient(circle, #1a0000 0%, #000 80%);
+        }
+
+        /* Tela de Login */
+        #loginScreen {
+            width: 320px;
+            background: rgba(10, 0, 0, 0.95);
+            border: 2px solid #ff0000;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
+            z-index: 200;
+        }
+
+        /* Painel Principal */
+        #mainPanel {
+            display: none;
+            width: 320px;
+            background: rgba(10, 0, 0, 0.95);
+            border: 2px solid #ff0000;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.4);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header { text-align: center; font-weight: bold; margin-bottom: 15px; text-shadow: 0 0 8px red; color: #ff0000; letter-spacing: 1px; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; }
+        .tab-btn {
+            flex: 1; padding: 8px 2px; border: 1px solid #ff0000; font-size: 10px;
+            cursor: pointer; background: transparent; color: white; text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .tab-btn.active { background: #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); color: black; font-weight: bold; }
+
+        .content { display: none; min-height: 320px; max-height: 420px; overflow-y: auto; }
+        .content.active { display: block; }
+
+        .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; font-family: sans-serif; }
+        
+        .btn-action { width: 100%; padding: 12px; color: white; border-radius: 4px; font-weight: bold; text-transform: uppercase; font-size: 11px; margin-top: 10px; cursor: pointer; transition: 0.4s; }
+        
+        .select-aim {
+            width: 100%; padding: 8px; background: #111; border: 1px solid #ff0000;
+            color: white; border-radius: 4px; font-size: 12px; margin-bottom: 10px;
+            outline: none; cursor: pointer;
+        }
+
+        .btn-inject { background: #000; border: 1px solid #ff0000; color: #ff0000; margin-top: 15px; }
+        .btn-inject:hover { background: #ff0000; color: #000; }
+
+        .btn-recoil { background: #440000; border: 2px solid #ff0000; }
+        .btn-recoil.active { background: #00ff00 !important; color: black !important; border-color: #00ff00 !important; box-shadow: 0 0 20px #00ff00 !important; }
+
+        .switch { position: relative; display: inline-block; width: 30px; height: 16px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #330000; border: 1px solid #ff0000; transition: .4s; border-radius: 10px; }
+        .slider-switch:before { position: absolute; content: ""; height: 10px; width: 10px; left: 2px; bottom: 2px; background-color: #ff0000; transition: .4s; border-radius: 50%; }
+        input:checked + .slider-switch { background-color: #ff0000; }
+        input:checked + .slider-switch:before { transform: translateX(14px); background-color: white; }
+
+        /* Estilo do Slider FOV */
+        .sensi-group { margin-top: 10px; margin-bottom: 15px; }
+        .sensi-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: #ff6666; font-family: sans-serif; }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #330000; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #ff0000; cursor: pointer; margin-top: -5px; box-shadow: 0 0 8px #ff0000; }
+
+        #hackerOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 100; display: none;
+            overflow: hidden; pointer-events: none;
+        }
+        .hacker-text {
+            position: absolute; color: #ff0000; font-size: 20px; 
+            white-space: nowrap; writing-mode: vertical-rl;
+            text-shadow: 0 0 5px red; animation: fall linear infinite;
+        }
+
+        @keyframes fall { to { transform: translateY(100vh); } }
+
+        .input-model, .input-key { width: 100%; padding: 10px; background: #111; border: 1px solid #ff0000; color: white; border-radius: 4px; margin-bottom: 15px; box-sizing: border-box; text-align: center; }
+        .ms-counter { text-align: center; font-size: 14px; color: #00ff00; margin-bottom: 15px; font-weight: bold; border: 1px solid #004400; padding: 5px; border-radius: 5px; background: rgba(0, 50, 0, 0.2); }
+        .footer-note { font-size: 9px; color: #666; text-align: center; margin-top: 10px; }
+        
+        .sensi-results { background: rgba(255, 0, 0, 0.05); border: 1px dashed #ff0000; padding: 10px; border-radius: 4px; font-size: 11px; display: none; margin-top: 10px; }
+        .sensi-results.show { display: block; }
+        .res-item { display: flex; justify-content: space-between; margin-bottom: 5px; color: #ff9999; border-bottom: 1px solid rgba(255,0,0,0.1); padding-bottom: 2px; }
+        .res-item b { color: #fff; text-shadow: 0 0 5px #ff0000; }
+        .sensi-instruction { color: #00ff00; font-size: 10px; text-align: center; margin-top: 12px; font-weight: bold; text-transform: uppercase; text-shadow: 0 0 5px #00ff00; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen">
+    <div class="header">SYSTEM AUTH</div>
+    <p style="font-size: 11px; color: #666;">INSIRA SUA KEY DE ACESSO</p>
+    <input type="password" id="keyInput" class="input-key" placeholder="Digite a Key aqui...">
+    <button class="btn-action" style="background: #ff0000; color: black; border: none;" onclick="checkKey()">ENTRAR NO SISTEMA</button>
+</div>
+
+<div id="hackerOverlay"></div>
+
+<div id="mainPanel">
+    <div class="header">@lCN.QZX SYSTEM</div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'aimbot')">Aimbot</button>
+        <button class="tab-btn" onclick="openTab(event, 'otimiza')">Otimização</button>
+        <button class="tab-btn" onclick="openTab(event, 'sensi7xz')">Sensi7xz</button>
+    </div>
+
+    <div id="aimbot" class="content active">
+        <div class="option-row">
+            <span>Alvo do Aim</span>
+            <select class="select-aim">
+                <option value="head">Cabeça</option>
+                <option value="neck">Pescoço</option>
+                <option value="chest">Peito</option>
+            </select>
+        </div>
+        
+        <div class="sensi-group">
+            <div class="sensi-label"><span>FOV RANGE</span><span id="fovVal">100%</span></div>
+            <input type="range" min="0" max="200" value="100" oninput="document.getElementById('fovVal').innerText = this.value + '%'">
+        </div>
+
+        <div class="option-row"><span>Priorizar Cabeça</span><label class="switch"><input type="checkbox" checked><span class="slider-switch"></span></label></div>
+        <div class="option-row"><span>Estabilizar Mira</span><label class="switch"><input type="checkbox" checked><span class="slider-switch"></span></label></div>
+        <div class="option-row"><span>Melhorar Precisão</span><label class="switch"><input type="checkbox" checked><span class="slider-switch"></span></label></div>
+        
+        <button id="recoilBtn" class="btn-action btn-recoil" onclick="toggleRecoil(this)">NO RECOIL: OFF</button>
+        <button class="btn-action btn-inject" onclick="startHackerEffect()">INJETAR ARQUIVOS</button>
+    </div>
+
+    <div id="otimiza" class="content">
+        <div class="ms-counter">LATÊNCIA: <span id="msValue">12</span>ms</div>
+        <div class="option-row"><span>Priorizar CPU</span><label class="switch"><input type="checkbox" checked><span class="slider-switch"></span></label></div>
+        <div class="option-row"><span>Limpar Cache</span><label class="switch"><input type="checkbox"><span class="slider-switch"></span></label></div>
+        <div class="option-row"><span>120 FPS Unlock</span><label class="switch"><input type="checkbox" checked><span class="slider-switch"></span></label></div>
+    </div>
+
+    <div id="sensi7xz" class="content">
+        <input type="text" id="phoneModel" class="input-model" placeholder="Modelo do celular...">
+        <button class="btn-action" style="background: #ff0000; color: black; border: none;" onclick="gerarSensi()">GERAR EXTREMA (100-200)</button>
+        <div id="results" class="sensi-results">
+            <div class="res-item">GERAL: <b id="rGeral">0</b></div>
+            <div class="res-item">MIRA 2X: <b id="r2x">0</b></div>
+            <div class="res-item">MIRA 4X: <b id="r4x">0</b></div>
+            <div class="res-item">BOTÃO: <b id="rBtn">0</b></div>
+            <div class="res-item">DPI: <b id="rDpi">0</b></div>
+            <div class="res-item">TAMANHO TEXTO: <b id="rTxt">0</b></div>
+        </div>
+        <div id="sensiInstruction" class="sensi-instruction">
+            Use a sensi e sempre deixe o auxilo em segundo plano
+        </div>
+    </div>
+
+    <div class="footer-note">V 2.0.4 - SESSION ACTIVE</div>
+</div>
+
+<script>
+    function checkKey() {
+        if (document.getElementById('keyInput').value === "Hszinnz-lindãodms") {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'block';
+        } else { alert("KEY INCORRETA!"); }
+    }
+
+    function openTab(evt, tabName) {
+        var i, content, tabBtn;
+        content = document.getElementsByClassName("content");
+        for (i = 0; i < content.length; i++) content[i].style.display = "none";
+        tabBtn = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tabBtn.length; i++) tabBtn[i].className = tabBtn[i].className.replace(" active", "");
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    function toggleRecoil(btn) {
+        btn.classList.toggle('active');
+        btn.innerText = btn.classList.contains('active') ? 'NO RECOIL: ATIVO' : 'NO RECOIL: OFF';
+    }
+
+    function startHackerEffect() {
+        const overlay = document.getElementById('hackerOverlay');
+        overlay.style.display = 'block';
+        overlay.innerHTML = '';
+        const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+        for (let i = 0; i < 50; i++) {
+            const span = document.createElement('span');
+            span.className = 'hacker-text';
+            span.style.left = Math.random() * 100 + 'vw';
+            span.style.animationDuration = (Math.random() * 2 + 1) + 's';
+            span.innerText = Array(20).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('\n');
+            overlay.appendChild(span);
+        }
+        setTimeout(() => { overlay.style.display = 'none'; alert("INJETADO!"); }, 3000);
+    }
+
+    function gerarSensi() {
+        if(document.getElementById('phoneModel').value === "") return alert("Digite o modelo!");
+        const randSensi = () => Math.floor(Math.random() * 101) + 100;
+        document.getElementById('rGeral').innerText = randSensi();
+        document.getElementById('r2x').innerText = randSensi();
+        document.getElementById('r4x').innerText = randSensi();
+        document.getElementById('rBtn').innerText = Math.floor(Math.random() * 16) + 45 + "%";
+        document.getElementById('rDpi').innerText = Math.floor(Math.random() * 401) + 500;
+        const tamanhos = ["Mínimo", "Pequeno", "Curto", "Médio"];
+        document.getElementById('rTxt').innerText = tamanhos[Math.floor(Math.random() * tamanhos.length)];
+        document.getElementById('results').classList.add('show');
+        document.getElementById('sensiInstruction').style.display = 'block';
+    }
+
+    setInterval(() => {
+        const val = document.getElementById('msValue');
+        if(val) val.innerText = Math.floor(Math.random() * 21);
+    }, 800);
+</script>
+
+</body>
+</html>
